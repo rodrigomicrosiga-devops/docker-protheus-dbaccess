@@ -23,7 +23,8 @@ FROM ubuntu:22.04
 ENV DEBIAN_FRONTEND=noninteractive
 
 LABEL maintainer="Rodrigo dos Santos Brandão <rodrigomicrosiga>"
-LABEL version="24.1.1" 
+LABEL version="24.1.1"
+LABEL description="TOTVS DBAccess 24.1.1"
 
 WORKDIR /totvs/dbaccess
 
