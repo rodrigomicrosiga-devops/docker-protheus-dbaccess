@@ -38,4 +38,4 @@ jobs:
           context: .
           file: ./Dockerfile
           push: true
-          tags: rodrigomicrosiga/dbaccess-dev:24.1.1  # 🎯 Tag única e imutável para governança sênior
+          tags: rodrigomicrosiga/dbaccess-dev:24.1.1.3  # 🎯 Alinhado com a label interna do binário
