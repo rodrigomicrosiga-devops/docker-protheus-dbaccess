@@ -26,7 +26,7 @@ RUN mkdir -p dbaccess_extracao /tmp/out_dbaccess \
 FROM ubuntu:22.04 AS runner
 LABEL maintainer="Rodrigo dos Santos Brandão <rodrigomicrosiga>"
 LABEL version="24.1.1.3"
-LABEL description="TOTVS DBAccess 24.1.1.3"
+
 
 ENV DEBIAN_FRONTEND=noninteractive \
     ORACLE_HOME=/opt/oracle/instantclient_21_3 \
