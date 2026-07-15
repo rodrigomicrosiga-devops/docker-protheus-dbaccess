@@ -16,20 +16,26 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && wget https://download.oracle.com/otn_software/linux/instantclient/213000/instantclient-basiclite-linux.x64-21.3.0.0.0.zip \
     && unzip instantclient-basiclite-linux.x64-21.3.0.0.0.zip
 
-# 🌟 RESOLUÇÃO: Copia dinamicamente qualquer arquivo tar.gz/TAR.GZ vindo do portal da TOTVS
+# Copia dinamicamente qualquer arquivo tar.gz/TAR.GZ vindo do portal da TOTVS
 COPY ./*.[tT][aA][rR].[gG][zZ] ./dbaccess.tar.gz
 
 RUN mkdir -p dbaccess_extracao /tmp/out_dbaccess \
     && tar -xzf dbaccess.tar.gz -C dbaccess_extracao/ \
     && (cp -R dbaccess_extracao/*/* /tmp/out_dbaccess/ 2>/dev/null || cp -R dbaccess_extracao/* /tmp/out_dbaccess/)
 
-# ⚡ O PULO DO GATO: Remoção de símbolos de debug dos executáveis e bibliotecas do DbAccess
+# 🧹 1. Faxina de pastas pesadas de desenvolvimento e debug da TOTVS
+RUN rm -rf /tmp/out_dbaccess/debug \
+           /tmp/out_dbaccess/dbtools \
+           /tmp/out_dbaccess/*.log \
+           /tmp/out_dbaccess/*.pdf
+
+# ⚡ 2. Remoção de símbolos de debug dos executáveis e bibliotecas do DbAccess
 RUN find /tmp/out_dbaccess/ -type f -name "*.so" -exec strip --strip-unneeded {} + 2>/dev/null || true
 RUN strip --strip-unneeded /tmp/out_dbaccess/dbaccess64 2>/dev/null || true
 RUN strip --strip-unneeded /tmp/out_dbaccess/dbaccesscfg 2>/dev/null || true
 
 # ==============================================================================
-# ESTÁGIO 2: Runner (Apenas o estritamente necessário para o Runtime)
+# ESTÁGIO 2: Runner (Imagem Otimizada e Dinâmica)
 # ==============================================================================
 FROM debian:bookworm-slim AS runner
 LABEL maintainer="Rodrigo dos Santos Brandão <rodrigomicrosiga>"
@@ -40,7 +46,7 @@ ENV DEBIAN_FRONTEND=noninteractive \
     ORACLE_HOME=/opt/oracle/instantclient_21_3 \
     LD_LIBRARY_PATH=/opt/oracle/instantclient_21_3:$LD_LIBRARY_PATH
 
-# Instalação limpa dos drivers ODBC mantendo a compatibilidade do Debian Bookworm com o MS ODBC 18
+# OTIMIZAÇÃO: Trocado 'unixodbc-dev' por apenas 'unixodbc' para economizar dezenas de megabytes
 RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
     ca-certificates \
