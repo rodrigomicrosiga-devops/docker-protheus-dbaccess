@@ -66,6 +66,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
+# 🚀 LINK SIMBÓLICO CIRÚRGICO: Cria o ponteiro libodbc.so exigido pelo binário do DbAccess
+# Isso evita a necessidade de instalar o pesado pacote 'unixodbc-dev'
+RUN ln -sf /usr/lib/x86_64-linux-gnu/libodbc.so.2 /usr/lib/x86_64-linux-gnu/libodbc.so
+
 # Copia os diretórios limpos e preparados do builder
 COPY --from=builder /tmp/build/instantclient_21_3 /opt/oracle/instantclient_21_3
 COPY --from=builder /tmp/out_dbaccess /opt/totvs/dbaccess/multi/
