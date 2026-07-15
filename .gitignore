@@ -1,4 +1,5 @@
 # Bloquear binários e instaladores compactados da TOTVS
+*.TAR.GZ
 *.tar.gz
 *.zip
 *.rar
