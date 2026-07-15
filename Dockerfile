@@ -42,9 +42,10 @@ LABEL maintainer="Rodrigo dos Santos Brandão <rodrigomicrosiga>"
 LABEL version="24.1.1.3"
 LABEL description="TOTVS DBAccess 24.1.1.3 - Ultra Light"
 
+# Ajuste seguro da definição das variáveis sem tentar concatenar com $LD_LIBRARY_PATH inexistente
 ENV DEBIAN_FRONTEND=noninteractive \
     ORACLE_HOME=/opt/oracle/instantclient_21_3 \
-    LD_LIBRARY_PATH=/opt/oracle/instantclient_21_3:$LD_LIBRARY_PATH
+    LD_LIBRARY_PATH=/opt/oracle/instantclient_21_3
 
 # OTIMIZAÇÃO: Trocado 'unixodbc-dev' por apenas 'unixodbc' para economizar dezenas de megabytes
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -67,7 +68,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 # 🚀 LINK SIMBÓLICO CIRÚRGICO: Cria o ponteiro libodbc.so exigido pelo binário do DbAccess
-# Isso evita a necessidade de instalar o pesado pacote 'unixodbc-dev'
 RUN ln -sf /usr/lib/x86_64-linux-gnu/libodbc.so.2 /usr/lib/x86_64-linux-gnu/libodbc.so
 
 # Copia os diretórios limpos e preparados do builder
