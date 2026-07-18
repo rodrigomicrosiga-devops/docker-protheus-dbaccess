@@ -125,7 +125,7 @@ if [ "$DB_TYPE_NORM" = "ORACLE" ]; then
     sed -i '/^TableSpace=/d' dbaccess.ini
     sed -i '/^IndexSpace=/d' dbaccess.ini
 fi
-
+# Inicialização do dbaccess
 echo "🚀 Disparando o TOTVS dbAccess..."
 if [ -f "/opt/totvs/dbaccess/dbaccess64" ]; then
     exec /opt/totvs/dbaccess/dbaccess64
