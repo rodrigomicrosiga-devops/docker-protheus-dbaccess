@@ -3,28 +3,32 @@ set -e
 
 echo "=== [dbAccess] Iniciando processo de configuração dinâmica ==="
 
+# Normaliza o dicionário de variáveis caso o ecossistema (K8s) envie o padrão universal
+DB_NAME="${DB_NAME:-$DB_DATABASE}"
+DB_PASS="${DB_PASS:-$DB_PASSWORD}"
+
 # Normaliza a variável DB_TYPE para maiúsculas para evitar quebras se digitado 'postgres' ou 'oracle' no .env
 DB_TYPE_NORM=$(echo "$DB_TYPE" | tr '[:lower:]' '[:upper:]')
 
-# 1. Valida o tipo de banco e define o alvo de rede com base no .env
+# 1. Valida o tipo de banco e define o alvo de rede de forma agnóstica (K8s / Compose)
 if [ "$DB_TYPE_NORM" = "POSTGRES" ]; then
-    TARGET_HOST="protheus_postgres"
-    TARGET_PORT="5432"
+    TARGET_HOST="${DB_SERVER:-protheus_postgres}"
+    TARGET_PORT="${DB_PORT:-5432}"
     CFG_TYPE="POSTGRES"
 elif [ "$DB_TYPE_NORM" = "MSSQL" ]; then
-    TARGET_HOST="protheus_mssql"
-    TARGET_PORT="1433"
+    TARGET_HOST="${DB_SERVER:-protheus_mssql}"
+    TARGET_PORT="${DB_PORT:-1433}"
     CFG_TYPE="MSSQL"
 elif [ "$DB_TYPE_NORM" = "ORACLE" ]; then
-    TARGET_HOST="protheus_oracle"
-    TARGET_PORT="1521"
+    TARGET_HOST="${DB_SERVER:-protheus_oracle}"
+    TARGET_PORT="${DB_PORT:-1521}"
     CFG_TYPE="ORACLE"
 else
     echo "❌ Tipo de banco desconhecido no .env: $DB_TYPE"
     exit 1
 fi
 
-# 2. Loop de resiliência aguardando o banco responder na rede interna do Docker
+# 2. Loop de resiliência aguardando o banco responder na rede (seja Kubernetes Service ou Docker Network)
 echo "⏳ Aguardando conectividade com o banco [${CFG_TYPE}] em ${TARGET_HOST}:${TARGET_PORT}..."
 while ! nc -z "$TARGET_HOST" "$TARGET_PORT"; do
     sleep 1
