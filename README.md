@@ -61,6 +61,14 @@ Para garantir que a receita do pipeline permaneça agnóstica a caminhos absolut
 
 Isso garante que, mesmo que o projeto seja clonado em outros servidores ou partições de dados no futuro, o Runner localizará inteligentemente o binário oculto guardado no host local sem quebrar o build.
 
+### 🏷️ Rastreabilidade de Build
+
+A tag da imagem publicada permanece fixa entre builds — só muda em uma nova release de versão. Para rastrear qual commit gerou um build específico sem depender da tag, o `pipeline` grava o label `org.opencontainers.image.revision` com o SHA do commit em toda imagem publicada:
+
+```bash
+docker inspect --format '{{ index .Config.Labels "org.opencontainers.image.revision" }}' rodrigomicrosiga/dbaccess-dev:24.1.1.3
+```
+
 ### 🚀 Como Executar a Imagem Localmente
 
 Após a conclusão da esteira de `CI/CD`, a imagem polida pode ser instanciada localmente de forma isolada ou integrada ao ecossistema através de um arquivo `docker-compose.yaml`:
