@@ -26,7 +26,7 @@ graph TD
 
     %% Entrega do Artefato Final
     subgraph Docker_Registry [Docker Hub Private/Public]
-        G -->|Push: Imagem Otimizada Multi-Stage| H[rodrigomicrosiga/dbaccess-dev:24.1.3]
+        G -->|Push: Imagem Otimizada Multi-Stage| H[rodrigomicrosiga/dbaccess-dev:24.1.1.3]
     end
 
     %% Estilização do Diagrama
@@ -77,7 +77,7 @@ Após a conclusão da esteira de `CI/CD`, a imagem polida pode ser instanciada l
 
 services:
   protheus-dbaccess:
-    image: rodrigomicrosiga/dbaccess-dev:24.1.3
+    image: rodrigomicrosiga/dbaccess-dev:24.1.1.3
     container_name: protheus-dbaccess-dev
     restart: always
     ports:
