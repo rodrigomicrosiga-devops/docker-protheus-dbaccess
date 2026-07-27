@@ -61,6 +61,17 @@ Para garantir que a receita do pipeline permaneça agnóstica a caminhos absolut
 
 Isso garante que, mesmo que o projeto seja clonado em outros servidores ou partições de dados no futuro, o Runner localizará inteligentemente o binário oculto guardado no host local sem quebrar o build.
 
+### 🔒 Integridade do Oracle Instant Client
+
+O estágio `builder` baixa o `Oracle Instant Client 21.3.0.0.0` diretamente do domínio oficial da Oracle via `wget`. Como esse pacote específico não aparece mais na página atual de downloads da Oracle (parado desde 2021) — ou seja, não há um checksum oficial publicado para consultar —, o build agora valida o `SHA-256` do arquivo baixado contra um hash capturado de um download verificado, antes de descompactar:
+
+```dockerfile
+&& wget https://download.oracle.com/otn_software/linux/instantclient/213000/instantclient-basiclite-linux.x64-21.3.0.0.0.zip \
+&& echo "ddbe84d7b96927a6a1de25d88c2d49e00eed6d43793000eeffde693840ff82c1  instantclient-basiclite-linux.x64-21.3.0.0.0.zip" | sha256sum -c -
+```
+
+Isso protege builds futuros contra corrupção em trânsito ou adulteração do artefato — antes, um download corrompido ou substituído silenciosamente seria descompactado e embutido na imagem sem qualquer aviso.
+
 ### 🏷️ Rastreabilidade de Build
 
 A tag da imagem publicada permanece fixa entre builds — só muda em uma nova release de versão. Para rastrear qual commit gerou um build específico sem depender da tag, o `pipeline` grava o label `org.opencontainers.image.revision` com o SHA do commit em toda imagem publicada:

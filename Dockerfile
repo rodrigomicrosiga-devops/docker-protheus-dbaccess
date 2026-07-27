@@ -6,6 +6,11 @@ ENV DEBIAN_FRONTEND=noninteractive
 
 WORKDIR /tmp/build
 
+# Verificação de integridade do Oracle Instant Client: a Oracle não publica mais
+# checksum para essa versão (pacote parado desde 2021, fora da página oficial de
+# downloads atuais), então o hash abaixo foi capturado de um download verificado
+# do domínio oficial da Oracle. Protege builds futuros contra corrupção/adulteração
+# do artefato em trânsito.
 RUN apt-get update && apt-get install -y --no-install-recommends \
     wget \
     unzip \
@@ -14,6 +19,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     binutils \
     && rm -rf /var/lib/apt/lists/* \
     && wget https://download.oracle.com/otn_software/linux/instantclient/213000/instantclient-basiclite-linux.x64-21.3.0.0.0.zip \
+    && echo "ddbe84d7b96927a6a1de25d88c2d49e00eed6d43793000eeffde693840ff82c1  instantclient-basiclite-linux.x64-21.3.0.0.0.zip" | sha256sum -c - \
     && unzip instantclient-basiclite-linux.x64-21.3.0.0.0.zip
 
 # Copia dinamicamente qualquer arquivo tar.gz/TAR.GZ vindo do portal da TOTVS
