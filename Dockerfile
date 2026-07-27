@@ -96,4 +96,10 @@ RUN echo /opt/oracle/instantclient_21_3 > /etc/ld.so.conf.d/oracle-instantclient
 
 WORKDIR /opt/totvs/dbaccess/multi
 USER dbaccess
+
+# netcat-openbsd já instalado no runner -- checa se o dbaccess64 está de fato
+# escutando na porta configurada.
+HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
+    CMD nc -z localhost 7890 || exit 1
+
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
