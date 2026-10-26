@@ -4,37 +4,20 @@ Este repositório é um componente isolado da arquitetura **TOTVS Protheus Moder
 
 ---
 
-## 🏗️ Arquitetura do Pipeline Híbrido (CI/CD)
+## 🏭 Build e publicação
 
-O pipeline foi desenhado seguindo as melhores práticas de governança corporativa e segurança da informação: o código-fonte e as instruções de esteira permanecem públicos e transparentes para auditoria, enquanto os arquivos binários pesados e proprietários são mantidos estritamente sob controle local, injetados dinamicamente via **Self-Hosted Runner**.
+Esta imagem é construída pelo workflow central **`Build image`** do repositório privado `protheus-catalog` — este repositório não tem workflow de publicação, e um push aqui **não** publica nada.
 
-```mermaid
-graph TD
-    %% Nós do Painel GitHub (Nuvem)
-    subgraph GitHub_Cloud [GitHub Cloud - rodrigomicrosiga-devops]
-        A[Git Push: develop/main] -->|Dispara Gatilho| B(GitHub Actions Orchestrator)
-        B -->|Entrega Definição do Job| C[Runner Group: Default]
-    end
+1. O catálogo guarda, por release, um manifesto (`releases/<release>/manifest.yaml`) com o caminho, o tamanho e o sha256 de cada arquivo oficial da TOTVS que compõe a imagem.
+2. `scripts/stage-image.sh <release> <imagem> <dir>` copia esses arquivos para um contexto limpo, **conferindo tamanho e sha256 antes e depois da cópia**; qualquer divergência aborta o build.
+3. O workflow acrescenta o `Dockerfile` e o `entrypoint.sh` deste repositório e roda `docker build --build-arg DBACCESS_VERSION=<versão do manifesto>`. Só publica com `push=true` e **recusa uma tag que já exista** no Docker Hub.
 
-    %% Nós da Infraestrutura Local (Músculo)
-    subgraph Local_Infrastructure [Infraestrutura Local - Server rsbdev01]
-        C -->|Orquestração Segura| D[GitHub Self-Hosted Agent]
-        E[(HD Externo: /media/dados/)] -->|Instalador Oculto: dbaccess.tar.gz| F(Workspace Temporário do Runner)
-        D -->|Ação: Git Checkout| F
-        F -->|Ação: Injeção de Contexto Relativo| G[Docker Build Engine 64-bit]
-    end
+* **Tag:** a versão do DBAccess (ex.: `24.1.1.3`, `26.1.0.1`); versão nova = tag nova.
+* **Build-arg:** `DBACCESS_VERSION` (obrigatório, sem valor padrão).
+* Os pacotes oficiais da TOTVS não são versionados aqui (`.gitignore`).
 
-    %% Entrega do Artefato Final
-    subgraph Docker_Registry [Docker Hub Private/Public]
-        G -->|Push: Imagem Otimizada Multi-Stage| H[rodrigomicrosiga/dbaccess-dev:24.1.1.3]
-    end
+O instalador do Oracle Instant Client é baixado no build com o sha256 conferido no próprio `Dockerfile` (ver abaixo).
 
-    %% Estilização do Diagrama
-    style B fill:#f9f,stroke:#333,stroke-width:2px
-    style D fill:#bbf,stroke:#333,stroke-width:2px
-    style G fill:#bfb,stroke:#333,stroke-width:2px
-    style H fill:#fbb,stroke:#333,stroke-width:2px
-```
 
 ### 🛠️ Especificações Técnicas da Imagem
 
@@ -47,19 +30,6 @@ A esteira de build utiliza o conceito de `Multi-Stage Build` para garantir o men
 `Dependências Isoladas`: Instalação limpa restrita à biblioteca nativa de sistema libuuid1.
 
 `Exposição de Portas`: Porta padrão do `DDAccess` (`7890`) documentada explicitamente.
-
-### ⚙️ Estrutura do Pipeline Portável
-
-Para garantir que a receita do pipeline permaneça agnóstica a caminhos absolutos de discos do sistema hospedeiro, a esteira utiliza resolução de contexto relativo e variáveis internas do ciclo de vida do `GitHub Actions`:
-
-```yaml
-# Trecho do resolvedor de contexto no workflow (.github/workflows/docker-publish.yml)
-- name: Resgatar Instalador Local no Workspace
-  run: |
-    cp ../../dbaccess.tar.gz . 2>/dev/null || cp "${{ github.workspace }}/../dbaccess.tar.gz" . 2>/dev/null || cp /media/rodrigo/dados/docker-protheus-dbaccess/dbaccess.tar.gz .
-```
-
-Isso garante que, mesmo que o projeto seja clonado em outros servidores ou partições de dados no futuro, o Runner localizará inteligentemente o binário oculto guardado no host local sem quebrar o build.
 
 ### 🔒 Integridade do Oracle Instant Client
 
