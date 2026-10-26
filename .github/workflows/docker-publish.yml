@@ -1,13 +1,10 @@
 name: Docker Build & Push DbAccess to Docker Hub
 
+# Só manual: o push NÃO publica. O Image Updater acompanha esta tag por digest, então um push que
+# sobrescrevesse a tag em uso trocaria a produção. Imagens saem pelo construtor central do
+# protheus-catalog (workflow build-image), com a versão vinda do manifesto.
 on:
-  push:
-    branches:
-      - main
-      - develop
-    paths-ignore:
-      - 'README.md'
-      - '.gitignore'
+  workflow_dispatch:
 
 jobs:
   build-and-push:
