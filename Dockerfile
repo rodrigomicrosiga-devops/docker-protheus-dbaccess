@@ -44,9 +44,12 @@ RUN strip --strip-unneeded /tmp/out_dbaccess/dbaccesscfg 2>/dev/null || true
 # ESTÁGIO 2: Runner (Imagem Otimizada e Dinâmica)
 # ==============================================================================
 FROM debian:bookworm-slim AS runner
+# Versão do componente: vem do construtor (build-arg), sem valor padrão para não rotular a imagem errada.
+ARG DBACCESS_VERSION
+RUN test -n "${DBACCESS_VERSION}" || { echo "ERRO: passe --build-arg DBACCESS_VERSION=<versão>" >&2; exit 1; }
 LABEL maintainer="Rodrigo dos Santos Brandão <rodrigomicrosiga>"
-LABEL version="24.1.1.3"
-LABEL description="TOTVS DBAccess 24.1.1.3 - Ultra Light"
+LABEL version="${DBACCESS_VERSION}"
+LABEL description="TOTVS DBAccess ${DBACCESS_VERSION} - Ultra Light"
 
 # Ajuste seguro da definição das variáveis sem tentar concatenar com $LD_LIBRARY_PATH inexistente
 ENV DEBIAN_FRONTEND=noninteractive \
